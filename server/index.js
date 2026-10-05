@@ -79,6 +79,8 @@ function videoFields(body) {
 
 // ---- Public API -----------------------------------------------------------
 
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
+
 app.get('/api/videos', (req, res) => {
   let videos = db.listVideos();
   if (req.query.category) videos = videos.filter((v) => v.category === req.query.category);

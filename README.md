@@ -40,7 +40,25 @@ npm run build
 ADMIN_PASSWORD="something-strong" npm start   # site + API on http://localhost:4000
 ```
 
-Deploy to any host that runs Node with a persistent disk (Render, Railway, Fly.io, a VPS…). Uploaded videos and data are written to `server/data/` — keep that folder on a persistent volume.
+Uploaded videos and data are written to `DATA_DIR` (default `server/data/`) — that folder **must live on a persistent disk**, otherwise uploads disappear on every redeploy.
+
+### Deploy on Render (recommended, ~5 minutes)
+
+1. Open **https://render.com/deploy?repo=https://github.com/uchihayt01-ux/kh** and sign in with GitHub.
+2. Render reads `render.yaml` and sets up a web service with a 10 GB disk for your videos. Enter a strong **ADMIN_PASSWORD** when asked.
+3. Click **Apply**. After the build you get a live `https://kinetik-studio-xxxx.onrender.com` URL; the dashboard is at `/admin`.
+4. Optional: add your own domain under *Settings → Custom Domains*.
+
+Persistent disks need Render's paid **Starter** instance (about $7/month + disk). The free tier would work for testing, but uploaded videos would be wiped on each restart.
+
+### Deploy with Docker (Railway, Fly.io, a VPS…)
+
+```bash
+docker build -t kinetik .
+docker run -p 4000:4000 -e ADMIN_PASSWORD=change-me -v kinetik-data:/data kinetik
+```
+
+On Railway/Fly, attach a volume mounted at `/data` and set `ADMIN_PASSWORD`.
 
 ### Environment variables
 
