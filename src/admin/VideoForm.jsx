@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { categories } from '../config.js';
 import { useAdmin } from './AdminLayout.jsx';
 import { resolveSource } from '../media.js';
+import { MAX_UPLOAD_MB } from '../supabase.js';
 
 const empty = {
   title: '',
@@ -104,26 +105,30 @@ export default function VideoForm() {
   async function submit(e) {
     e.preventDefault();
     setError('');
-    const fd = new FormData();
-    for (const [k, v] of Object.entries(form)) {
-      if (k in empty) fd.append(k, typeof v === 'boolean' ? String(v) : v ?? '');
-    }
+    const fields = Object.fromEntries(Object.keys(empty).map((k) => [k, form[k]]));
+    const files = {};
     if (mode === 'upload') {
-      fd.set('externalUrl', '');
-      if (videoFile) fd.append('video', videoFile);
-      else if (removeVideo) fd.append('removeVideo', 'true');
+      fields.externalUrl = '';
+      if (videoFile) files.video = videoFile;
+      else if (removeVideo) files.removeVideo = true;
     } else if (existing?.videoUrl) {
-      fd.append('removeVideo', 'true');
+      files.removeVideo = true;
     }
-    if (thumbFile) fd.append('thumbnail', thumbFile);
-    else if (removeThumb) fd.append('removeThumbnail', 'true');
+    if (thumbFile) files.thumbnail = thumbFile;
+    else if (removeThumb) files.removeThumbnail = true;
+
+    const tooBig = [files.video, files.thumbnail].find((f) => f && f.size > MAX_UPLOAD_MB * 1024 * 1024);
+    if (tooBig) {
+      setError(`“${tooBig.name}” is ${(tooBig.size / 1024 / 1024).toFixed(0)} MB. The free plan allows up to ${MAX_UPLOAD_MB} MB per file — upload big videos to YouTube or Vimeo (unlisted is fine) and paste the link instead.`);
+      return;
+    }
 
     setProgress(0);
     try {
-      const saved = isNew ? await api.admin.create(fd, setProgress) : await api.admin.update(id, fd, setProgress);
+      const saved = await api.admin.save(id, fields, files, setProgress);
       notify(isNew ? 'Video uploaded' : 'Changes saved');
       navigate(isNew ? `/admin/videos/${saved.id}` : '/admin/videos', { replace: isNew });
-      if (isNew) setProgress(null);
+      setProgress(null);
     } catch (err) {
       setError(err.message);
       setProgress(null);
@@ -174,7 +179,7 @@ export default function VideoForm() {
                   </div>
                 </>
               ) : (
-                <Dropzone accept="video/*" label="Drop a video file or click to browse" hint="MP4, MOV or WebM — H.264 MP4 plays everywhere" onFile={(f) => { setVideoFile(f); setRemoveVideo(false); }} />
+                <Dropzone accept="video/*" label="Drop a video file or click to browse" hint={`MP4, MOV or WebM · up to ${MAX_UPLOAD_MB} MB (bigger videos: use a YouTube / Vimeo link)`} onFile={(f) => { setVideoFile(f); setRemoveVideo(false); }} />
               )
             ) : (
               <div className="field">

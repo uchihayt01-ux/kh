@@ -1,12 +1,11 @@
 {
   "name": "kinetik-studio",
   "version": "1.0.0",
-  "description": "Motion graphics studio portfolio with a video hosting dashboard",
+  "description": "Motion graphics studio portfolio with a video dashboard, powered by Supabase",
   "scripts": {
-    "dev": "concurrently -n api,web -c blue,magenta \"node --watch server/index.js\" \"vite\"",
+    "dev": "vite",
     "build": "vite build",
-    "start": "NODE_ENV=production node server/index.js",
-    "preview": "npm run build && npm start"
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -18,15 +17,13 @@
   },
   "homepage": "https://github.com/uchihayt01-ux/kh#readme",
   "dependencies": {
-    "express": "^4.22.3",
-    "multer": "^1.4.4",
+    "@supabase/supabase-js": "^2.117.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.7.0",
-    "concurrently": "^9.2.4",
     "vite": "^5.4.21"
   },
   "private": true,

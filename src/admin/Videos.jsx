@@ -42,16 +42,15 @@ export default function Videos() {
   );
 
   async function toggle(video, key) {
-    const fd = new FormData();
-    fd.append(key, String(!video[key]));
-    const updated = await api.admin.update(video.id, fd);
+    const updated = await api.admin.patch(video.id, { [key]: !video[key] }).catch((e) => notify(e.message));
+    if (!updated) return;
     setVideos((vs) => vs.map((v) => (v.id === video.id ? updated : v)));
     notify(key === 'published' ? (updated.published ? 'Published' : 'Moved to drafts') : updated.featured ? 'Featured on homepage' : 'Removed from homepage');
   }
 
   async function remove(video) {
     if (!window.confirm(`Delete “${video.title}”? The uploaded files will be removed too.`)) return;
-    await api.admin.remove(video.id);
+    await api.admin.remove(video);
     setVideos((vs) => vs.filter((v) => v.id !== video.id));
     notify('Video deleted');
   }

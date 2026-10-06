@@ -8,6 +8,7 @@ import Project from './pages/Project.jsx';
 import Services from './pages/Services.jsx';
 import Contact from './pages/Contact.jsx';
 import NotFound from './pages/NotFound.jsx';
+import { isConfigured } from './supabase.js';
 
 const AdminLayout = lazy(() => import('./admin/AdminLayout.jsx'));
 const Login = lazy(() => import('./admin/Login.jsx'));
@@ -50,7 +51,29 @@ function SiteLayout() {
   );
 }
 
+function SetupNotice() {
+  return (
+    <section className="page-head" style={{ minHeight: '100vh' }}>
+      <div className="container" style={{ maxWidth: 720 }}>
+        <div className="eyebrow">Setup needed</div>
+        <h1 style={{ fontSize: 'clamp(40px, 6vw, 64px)' }}>
+          Connect <span className="serif">Supabase</span>
+        </h1>
+        <p className="lead">
+          The site is running, but it doesn’t know your Supabase project yet. Add these two environment variables
+          (in Vercel: Project → Settings → Environment Variables), then redeploy:
+        </p>
+        <pre className="panel" style={{ marginTop: 24, overflowX: 'auto', fontSize: 14, background: 'var(--surface)', padding: 20, borderRadius: 12, border: '1px solid var(--line)' }}>
+          VITE_SUPABASE_URL=https://your-project.supabase.co{'\n'}VITE_SUPABASE_ANON_KEY=your-anon-key
+        </pre>
+        <p className="lead" style={{ marginTop: 16, fontSize: 15 }}>Find both in Supabase → Project Settings → API. Full steps are in the README.</p>
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
+  if (!isConfigured) return <SetupNotice />;
   return (
     <>
       <ScrollManager />

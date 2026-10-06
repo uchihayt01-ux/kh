@@ -1,88 +1,91 @@
 # Kinetik — Motion & Video Studio
 
-A clean, minimal portfolio site for a motion-graphics / video studio, plus a private dashboard to upload and manage the videos shown on it.
+A clean, minimal portfolio site for a motion-graphics / video studio, with a private dashboard to upload and manage the videos shown on it.
 
-**Built with:** React 18 + Vite + React Router (frontend) · Node / Express + Multer (API and video hosting) · JSON file storage (no database to set up).
+**100% free stack:** React + Vite (site) · **Supabase** free plan (database, video storage, login) · **Netlify** or Vercel free plan (hosting).
 
 ## Features
 
 ### Public website
-- **Home** — hero, showreel (auto-plays your first featured upload), client marquee, selected work, testimonial, services, process, about + stats, pricing, testimonials, FAQ and a call-to-action
-- **Work** — portfolio grid filterable by service (SaaS videos, Reels & social, Cinematic, Events, Video editing). Cards preview the video on hover.
-- **Project page** — video player (uploaded file, YouTube, Vimeo or direct MP4 link), description, credits and related work
-- **Services** — each service with a real example pulled from your portfolio
-- **Contact** — enquiry form; messages land in the dashboard
-- Fully responsive, scroll-reveal animations, respects `prefers-reduced-motion`
+- **Home**: hero, showreel (auto-plays your first featured uploaded video), client marquee, selected work, testimonial, services, process, about and stats, pricing, testimonials, FAQ, call-to-action
+- **Work**: portfolio grid filterable by service (SaaS videos, Reels & social, Cinematic, Events, Video editing), with hover previews
+- **Project page**: video player (uploaded file, YouTube, Vimeo or MP4 link), description, credits, related work
+- **Services** and **Contact** (enquiries land in the dashboard)
+- Responsive, animated, respects `prefers-reduced-motion`
 
 ### Dashboard (`/admin`)
-- Password login
-- **Overview** — video count, total plays, unread messages, videos per service, most-played videos
-- **Upload video** — drag & drop a video file (with progress bar) or paste a YouTube / Vimeo / MP4 link; add a cover image; title, client, service, description, role, tags, year, length and format (length and format are detected from the file)
-- **Manage videos** — search, filter, edit, delete, publish/unpublish, feature on the homepage, reorder
-- **Messages** — read, reply, mark read/unread and delete contact-form enquiries
+- Email + password login (Supabase Auth). Only admins can get in.
+- Overview: videos, plays, unread messages, videos per service, most played
+- Upload a video file (with progress bar) or paste a YouTube / Vimeo / MP4 link, add a cover image and all project details
+- Edit, delete, publish/unpublish, feature on homepage, reorder
+- Read, reply to and manage contact-form messages
 
-## Getting started
+---
+
+## Go live for free (about 15 minutes)
+
+### Step 1: Supabase (database + video storage)
+
+1. Go to **https://supabase.com** → **Start your project** → sign up (free, no card needed).
+2. Click **New project**. Choose a name (e.g. `kinetik`), set a database password (save it somewhere) and pick the region closest to you. Click **Create new project** and wait ~2 minutes.
+3. In the left menu open **SQL Editor** → **New query**. Open [`supabase/schema.sql`](supabase/schema.sql) from this repo, copy **all** of it, paste it in, and click **Run**. You should see *“Success. No rows returned”*.
+   This creates the tables, the `media` storage bucket, the security rules and 6 sample projects.
+4. Create your dashboard login: left menu **Authentication** → **Users** → **Add user** → **Create new user**. Enter your email and a password, tick **Auto Confirm User**, click **Create user**.
+   The **first** user you create automatically becomes the admin.
+5. Lock the door: **Authentication** → **Sign In / Providers** (or *Settings*) → turn **off** “Allow new users to sign up” → **Save**.
+6. Copy your keys: click **Connect** at the top (or **Project Settings → API**). Copy the **Project URL** and the **anon / public** key. You need them in step 2.
+
+### Step 2: Netlify (hosting)
+
+Netlify's free plan allows business websites.
+
+1. Go to **https://app.netlify.com** → sign up **with GitHub**.
+2. **Add new site** → **Import an existing project** → **GitHub** → allow access → choose the **`kh`** repository.
+3. Netlify reads the build settings from `netlify.toml` automatically (build: `npm run build`, publish: `dist`).
+4. Click **Add environment variables** (or *Show advanced*) and add:
+   | Key | Value |
+   | --- | --- |
+   | `VITE_SUPABASE_URL` | your Project URL |
+   | `VITE_SUPABASE_ANON_KEY` | your anon / public key |
+5. Click **Deploy**. After ~1 minute you get a link like `https://kinetik-xxxx.netlify.app`.
+6. Open `your-link/admin`, sign in with the email and password from step 1.4, and start uploading.
+
+**Your own domain:** Netlify → *Domain management* → *Add a domain*.
+
+**Vercel instead?** It works too (`vercel.json` is included): *Add New → Project → import `kh` → add the same two environment variables → Deploy*. Note that Vercel's free Hobby plan is meant for personal, non-commercial sites.
+
+Every time code is pushed to GitHub, the site updates automatically.
+
+---
+
+## Free plan limits (good to know)
+
+- **50 MB max per uploaded file** on Supabase free. For longer or high-quality videos, upload to **YouTube or Vimeo** (unlisted is fine) and paste the link in the dashboard. They play right inside your site and cost you nothing in storage or bandwidth.
+- Supabase free includes roughly **1 GB of file storage** and a monthly bandwidth allowance. Check supabase.com/pricing for current numbers.
+- A free Supabase project **pauses after about a week with no activity**. If that happens, open your Supabase dashboard and click **Restore project** (free). Regular visitors keep it awake.
+
+## Run locally
 
 ```bash
+cp .env.example .env      # then paste your Supabase URL + anon key
 npm install
-npm run dev
+npm run dev               # http://localhost:5173
 ```
-
-- Website: http://localhost:5173
-- Dashboard: http://localhost:5173/admin — default password **`admin123`**
-
-The first run seeds six sample projects (without video files) so the layout isn't empty. Edit or delete them from the dashboard.
-
-## Production
-
-```bash
-npm run build
-ADMIN_PASSWORD="something-strong" npm start   # site + API on http://localhost:4000
-```
-
-Uploaded videos and data are written to `DATA_DIR` (default `server/data/`) — that folder **must live on a persistent disk**, otherwise uploads disappear on every redeploy.
-
-### Deploy on Render (recommended, ~5 minutes)
-
-1. Open **https://render.com/deploy?repo=https://github.com/uchihayt01-ux/kh** and sign in with GitHub.
-2. Render reads `render.yaml` and sets up a web service with a 10 GB disk for your videos. Enter a strong **ADMIN_PASSWORD** when asked.
-3. Click **Apply**. After the build you get a live `https://kinetik-studio-xxxx.onrender.com` URL; the dashboard is at `/admin`.
-4. Optional: add your own domain under *Settings → Custom Domains*.
-
-Persistent disks need Render's paid **Starter** instance (about $7/month + disk). The free tier would work for testing, but uploaded videos would be wiped on each restart.
-
-### Deploy with Docker (Railway, Fly.io, a VPS…)
-
-```bash
-docker build -t kinetik .
-docker run -p 4000:4000 -e ADMIN_PASSWORD=change-me -v kinetik-data:/data kinetik
-```
-
-On Railway/Fly, attach a volume mounted at `/data` and set `ADMIN_PASSWORD`.
-
-### Environment variables
-
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `ADMIN_PASSWORD` | `admin123` | Dashboard password — **change it** |
-| `SESSION_SECRET` | derived from password | Secret used to sign login tokens |
-| `PORT` | `4000` | Server port |
-| `DATA_DIR` | `server/data` | Where `db.json` and uploads are stored |
-| `UPLOAD_DIR` | `$DATA_DIR/uploads` | Where uploaded files are stored |
-| `MAX_UPLOAD_MB` | `1024` | Max upload size per file |
 
 ## Customising
 
-- **All text** (studio name, email, services, pricing, testimonials, FAQ, stats, clients) lives in [`src/config.js`](src/config.js).
-- **Colours & fonts** are CSS variables at the top of [`src/styles.css`](src/styles.css) (`--accent`, `--bg`, `--ink`…).
-- Export videos as **H.264 MP4** so they play in every browser. For many large videos, consider hosting on Vimeo/YouTube and pasting the link instead.
+- **All text** (studio name, email, services, pricing, testimonials, FAQ, stats, clients) is in [`src/config.js`](src/config.js).
+- **Colours & fonts** are CSS variables at the top of [`src/styles.css`](src/styles.css).
+- Export uploads as **H.264 MP4** so they play in every browser.
 
 ## Project structure
 
 ```
-server/            Express API, auth, JSON storage, uploads
-src/config.js      site copy & content
-src/pages/         Home, Work, Project, Services, Contact
-src/components/    Nav, Footer, VideoCard, VideoPlayer, shared sections
-src/admin/         dashboard: Login, Overview, Videos, VideoForm, Messages
+supabase/schema.sql   tables, storage bucket, security rules, sample data
+src/supabase.js       Supabase client
+src/api.js            all data access (videos, uploads, messages, auth)
+src/config.js         site copy & content
+src/pages/            Home, Work, Project, Services, Contact
+src/components/       Nav, Footer, VideoCard, VideoPlayer, shared sections
+src/admin/            dashboard: Login, Overview, Videos, VideoForm, Messages
 ```

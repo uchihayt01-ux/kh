@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { api, auth } from '../api.js';
+import { api } from '../api.js';
 import { Logo } from '../components/Nav.jsx';
 import './admin.css';
 
@@ -12,8 +12,10 @@ export default function AdminLayout() {
   const [unread, setUnread] = useState(0);
   const [toast, setToast] = useState('');
 
+  const [session, setSession] = useState(undefined);
+
   const refreshUnread = useCallback(() => {
-    api.admin.stats().then((s) => setUnread(s.unread)).catch(() => {});
+    api.admin.unread().then(setUnread).catch(() => {});
   }, []);
 
   const notify = useCallback((msg) => {
@@ -24,13 +26,17 @@ export default function AdminLayout() {
 
   useEffect(() => {
     document.title = 'Dashboard — Kinetik';
-    if (auth.get()) refreshUnread();
+    api.session().then((s) => {
+      setSession(s);
+      if (s) refreshUnread();
+    });
   }, [refreshUnread]);
 
-  if (!auth.get()) return <Navigate to="/admin/login" replace />;
+  if (session === undefined) return <div className="login"><p style={{ color: 'var(--muted)' }}>Loading…</p></div>;
+  if (!session) return <Navigate to="/admin/login" replace />;
 
-  const logout = () => {
-    auth.clear();
+  const logout = async () => {
+    await api.logout();
     navigate('/admin/login');
   };
 
